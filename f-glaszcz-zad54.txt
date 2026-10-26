@@ -1,0 +1,24 @@
+1
+SELECT (SELECT COUNT(*) FROM uczen) AS uczen, (SELECT COUNT(*) FROM nauczyciel) AS nauczyciel, (SELECT COUNT(*) FROM przedmiot) AS przedmiot, (SELECT COUNT(*) FROM ocena) AS ocena;
+2
+DROP TABLE przedmiot;
+3
+SET FOREIGN_KEY_CHECKS = 0;
+4
+DELETE FROM przedmiot;
+5
+SET FOREIGN_KEY_CHECKS = 1;
+6
+ALTER TABLE przedmiot DROP COLUMN id;
+7
+ALTER TABLE przedmiot DROP FOREIGN KEY ocena_ibfk_2;
+8
+ALTER TABLE przedmiot DROP COLUMN id;
+9
+ALTER TABLE przedmiot ADD COLUMN id INT AUTO_INCREMENT PRIMARY KEY FIRST;
+10
+ALTER TABLE ocena ADD CONSTRAINT ocena_ibfk_2 FOREIGN KEY (przedmiot_id) REFERENCES przedmiot(id);
+11
+LOAD DATA LOCAL INFILE '/home/4ftp13/Publiczny/przedmiot_54.txt' INTO TABLE przedmiot FIELDS TERMINATED BY '\;' LINES TERMINATED BY '\n';
+12
+mysqldump -u 4ftp13 -p 4ftp13 > f-glaszcz-db54.sql

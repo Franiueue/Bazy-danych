@@ -1,0 +1,167 @@
+- ========================================================
+-- CZĘŚĆ 1: LISTA POPRAWNYCH ODPOWIEDZI (1-44)
+-- ========================================================
+-- 1. C
+-- 2. A
+-- 3. D
+-- 4. B
+-- 5. C
+-- 6. A
+-- 7. D
+-- 8. B
+-- 9. B
+-- 10. D
+-- 11. A
+-- 12. C
+-- 13. D
+-- 14. B
+-- 15. C
+-- 16. A
+-- 17. A
+-- 18. C
+-- 19. B
+-- 20. D
+-- 21. C
+-- 22. A
+-- 23. D
+-- 24. B
+-- 25. B
+-- 26. A
+-- 27. D
+-- 28. C
+-- 29. B
+-- 30. D
+-- 31. A
+-- 32. C
+-- 33. B
+-- 34. A
+-- 35. D
+-- 36. C
+-- 37. B
+-- 38. A
+-- 39. C
+-- 40. D
+-- 41. A
+-- 42. D
+-- 43. B
+-- 44. C
+
+-- ========================================================
+-- CZĘŚĆ 2: PRZYKŁADOWE ZAPYTANIA I OPERACJE Z PYTAŃ TESTOWYCH
+-- ========================================================
+-- 1. Tworzenie tabel w poprawnej kolejności
+CREATE TABLE nauczyciel (id INT AUTO_INCREMENT PRIMARY KEY, imie VARCHAR(20), nazwisko VARCHAR(30));
+CREATE TABLE uczen (id INT AUTO_INCREMENT PRIMARY KEY, imie VARCHAR(20), nazwisko VARCHAR(30), klasa VARCHAR(4), funkcja VARCHAR(15), data_urodzin DATE, adres VARCHAR(40));
+CREATE TABLE przedmiot (id INT AUTO_INCREMENT PRIMARY KEY, nazwa VARCHAR(100), skrot VARCHAR(5), sala VARCHAR(5), liczba_godzin INT, nauczyciel_id INT, FOREIGN KEY (nauczyciel_id) REFERENCES nauczyciel(id));
+CREATE TABLE ocena (id INT AUTO_INCREMENT PRIMARY KEY, ocena INT, uczen_id INT, przedmiot_id INT, FOREIGN KEY (uczen_id) REFERENCES uczen(id), FOREIGN KEY (przedmiot_id) REFERENCES przedmiot(id));
+
+-- 2. Lista kont użytkowników i hostów
+SELECT user, host FROM mysql.user;
+
+-- 3. Wybór bieżącej bazy danych
+USE klasa;
+
+-- 6. Wczytywanie danych z pliku uczen.txt
+LOAD DATA LOCAL INFILE '/home/omega/Dokumenty/uczen.txt' INTO TABLE uczen FIELDS TERMINATED BY '\;' LINES TERMINATED BY '\n';
+
+-- 7. Zmiana hasła użytkownika
+ALTER USER 'nazwa_uzytkownika'@'localhost' IDENTIFIED BY 'nowe_haslo';
+
+-- 8. Zapisywanie zawartości tabeli do pliku tekstowego na serwerze
+SELECT * INTO OUTFILE '/var/lib/mysql-files/przedmiot.txt' FIELDS TERMINATED BY ';' LINES TERMINATED BY '\n' FROM przedmiot;
+
+-- 9. Przedmioty prowadzone przez nauczyciela o nazwisku Gesse
+SELECT przedmiot.nazwa, nauczyciel.nazwisko FROM przedmiot, nauczyciel WHERE przedmiot.nauczyciel_id = nauczyciel.id AND nauczyciel.nazwisko = 'Gesse';
+
+-- 10. Zmiana daty urodzin ucznia Pieper (id 17)
+UPDATE uczen SET data_urodzin = '2000-06-09' WHERE id = '17' AND nazwisko = 'Pieper';
+
+-- 12. Pierwszych pięciu uczniów w kolejności alfabetycznej według nazwiska
+SELECT * FROM uczen ORDER BY nazwisko ASC LIMIT 5;
+
+-- 13. Oceny Roberta Elwarta wraz z nazwami przedmiotów
+SELECT ocena.ocena, przedmiot.nazwa FROM ocena JOIN uczen ON ocena.uczen_id = uczen.id JOIN przedmiot ON ocena.przedmiot_id = przedmiot.id WHERE uczen.imie = 'Robert' AND uczen.nazwisko = 'Elwart';
+
+-- 16. Średnia wszystkich ocen w bazie zaokrąglona do dwóch miejsc
+SELECT ROUND(AVG(ocena), 2) AS srednia_ocen FROM ocena;
+
+-- 17. Lista unikalnych klas
+SELECT DISTINCT klasa FROM uczen ORDER BY klasa;
+
+-- 18. Zliczanie uczniów w każdej klasie z grupowaniem
+SELECT klasa, COUNT(*) AS liczba_uczniow FROM uczen GROUP BY klasa;
+
+-- 19. Uczniowie spoza klasy 4eft
+SELECT id, imie, nazwisko, klasa FROM uczen WHERE klasa <> '4eft';
+
+-- 21. Kopia zapasowa bazy danych z poziomu konsoli systemowej
+-- mysqldump -u user -p twoja_baza > twoja_baza_backup_$(date +%Y%m%d).sql
+
+-- 23. LEFT JOIN zachowujący wszystkie wiersze tabeli po lewej stronie
+SELECT * FROM ocena LEFT JOIN przedmiot ON ocena.przedmiot_id = przedmiot.id;
+
+-- 24. Usuwanie nauczycieli, którzy nie prowadzą żadnego przedmiotu
+DELETE FROM nauczyciel WHERE id NOT IN (SELECT nauczyciel_id FROM przedmiot);
+
+-- 25. Opróżnianie tabel w bezpiecznej kolejności
+DELETE FROM ocena; DELETE FROM przedmiot; DELETE FROM uczen; DELETE FROM nauczyciel;
+
+-- 28. Pobranie id Małgorzaty Płudowskiej
+SELECT id FROM uczen WHERE imie = 'Małgorzata' AND nazwisko = 'Płudowska';
+
+-- 30. Dodawanie wielu ocen jednym poleceniem
+INSERT INTO ocena (ocena, uczen_id, przedmiot_id) VALUES (5, 35, 1), (4, 35, 2);
+
+-- 31. INNER JOIN łączący tabele uczen i ocena
+SELECT * FROM uczen INNER JOIN ocena ON uczen.id = ocena.uczen_id;
+
+-- 32. Ustawienie licznika AUTO_INCREMENT od początku
+ALTER TABLE uczen AUTO_INCREMENT = 1;
+
+-- 36. Wyłączenie sprawdzania kluczy obcych w bieżącej sesji
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- 40. Usuwanie ograniczenia klucza obcego łączącego ocena z przedmiot
+ALTER TABLE ocena DROP FOREIGN KEY ocena_ibfk_2;
+
+-- 41. Dodanie kolumny id jako klucz główny z automatyczną numeracją na pierwszej pozycji
+ALTER TABLE przedmiot ADD COLUMN id INT AUTO_INCREMENT PRIMARY KEY FIRST;
+
+-- 42. Przywrócenie relacji klucza obcego między tabelami ocena i przedmiot
+ALTER TABLE ocena ADD CONSTRAINT ocena_ibfk_2 FOREIGN KEY (przedmiot_id) REFERENCES przedmiot(id);
+
+-- 43. Dodanie nowej kolumny email do tabeli uczen
+ALTER TABLE uczen ADD COLUMN email VARCHAR(100);
+
+-- 44. Nadanie uprawnień odczytu do wszystkich tabel w bazie szkola
+GRANT SELECT ON szkola.* TO 'jan'@'localhost';
+
+-- ========================================================
+-- CZĘŚĆ 3: PRZYGOTOWANIE I WPROWADZENIE DANYCH DO TABELI RESULT
+-- ========================================================
+-- Tworzenie struktury tabeli result
+CREATE TABLE result (
+  id int(11) NOT NULL AUTO_INCREMENT,
+  score char(1) DEFAULT NULL,
+  scoring int(1) DEFAULT 0,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Czyszczenie tabeli i reset licznika
+DELETE FROM result;
+ALTER TABLE result AUTO_INCREMENT = 1;
+
+-- Wprowadzenie wszystkich 44 poprawnych odpowiedzi do tabeli result
+INSERT INTO result (id, score, scoring) VALUES
+(1, 'C', 0), (2, 'A', 0), (3, 'D', 0), (4, 'B', 0), (5, 'C', 0),
+(6, 'A', 0), (7, 'D', 0), (8, 'B', 0), (9, 'B', 0), (10, 'D', 0),
+(11, 'A', 0), (12, 'C', 0), (13, 'D', 0), (14, 'B', 0), (15, 'C', 0),
+(16, 'A', 0), (17, 'A', 0), (18, 'C', 0), (19, 'B', 0), (20, 'D', 0),
+(21, 'C', 0), (22, 'A', 0), (23, 'D', 0), (24, 'B', 0), (25, 'B', 0),
+(26, 'A', 0), (27, 'D', 0), (28, 'C', 0), (29, 'B', 0), (30, 'D', 0),
+(31, 'A', 0), (32, 'C', 0), (33, 'B', 0), (34, 'A', 0), (35, 'D', 0),
+(36, 'C', 0), (37, 'B', 0), (38, 'A', 0), (39, 'C', 0), (40, 'D', 0),
+(41, 'A', 0), (42, 'D', 0), (43, 'B', 0), (44, 'C', 0);
+
+-- Sprawdzenie liczby uzyskanych punktów po uruchomieniu skryptu sprawdzającego
+SELECT COUNT(*) FROM result WHERE scoring = 1;
